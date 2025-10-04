@@ -52,7 +52,7 @@
 
     <section class="products">
         <div class="product">
-            <img src="https://via.placeholder.com/250x200?text=Чашка+Наруто+та+Саске" alt="Чашка деколь Наруто та Саске">
+            <img src="/images/naruto-cup-dryzhba.jpg" alt="Чашка деколь Наруто та Саске">
             <div class="product-content">
                 <h3>Чашка деколь Наруто та Саске</h3>
                 <p>250 грн</p>
@@ -60,11 +60,11 @@
             </div>
         </div>
         <div class="product">
-            <img src="https://via.placeholder.com/250x200?text=Дерев'яний+постер" alt="Дерев'яний постер">
+            <img src="/images/naruto-derev-poster-klan-akatsuki.jpg" alt="Деревяний постер">
             <div class="product-content">
-                <h3>Дерев'яний постер</h3>
+                <h3>Деревяний постер</h3>
                 <p>500 грн</p>
-                <button onclick="addToCart('Дерев'яний постер', 500)">Купити</button>
+                <button onclick="addToCart('Деревяний постер', 500)">Купити</button>
             </div>
         </div>
     </section>
@@ -88,13 +88,17 @@
             <div id="order-form">
                 <h3>Деталі замовлення</h3>
                 <p>Товари: <span id="order-details"></span></p>
-                <form id="checkout-form">
-                    <input type="text" id="name" placeholder="Ваше ім'я" required>
-                    <input type="email" id="email" placeholder="Ваш email" required>
-                    <input type="tel" id="phone" placeholder="Ваш телефон" required>
-                    <textarea id="address" placeholder="Адреса доставки" rows="3" required></textarea>
-                    <button type="submit">Відправити</button>
-                </form>
+                <form id="checkout-form" name="purchase-form" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+    <input type="hidden" name="form-name" value="purchase-form">
+    <input type="text" name="name" id="name" placeholder="Ваше ім'я" required>
+    <input type="email" name="email" id="email" placeholder="Ваш email" required>
+    <input type="tel" name="phone" id="phone" placeholder="Ваш телефон" required>
+    <textarea name="address" id="address" placeholder="Адреса доставки" rows="3" required></textarea>
+    <input type="hidden" name="details" id="order-details-hidden"> <!-- Заповнюється JS -->
+    <input type="hidden" name="total" id="total-hidden">
+    <button type="submit">Відправити</button>
+    <p class="honeypot" style="display:none;">bot-field</p> <!-- Антиспам -->
+</form>
             </div>
 
             <!-- Подяка -->
@@ -107,78 +111,93 @@
     </div>
 
     <script>
-        let cart = [];
+    let cart = [];
 
-        function addToCart(name, price) {
-            cart.push({ name, price });
-            updateCartIcon();
-            alert('Товар додано до кошика!'); // Простий фідбек, як у прикладі
-        }
+    function addToCart(name, price) {
+        cart.push({ name, price });
+        updateCartIcon();
+        alert('Товар додано до кошика!'); // Простий фідбек, як у прикладі
+    }
 
-        function updateCartIcon() {
-            document.getElementById('cart-count').textContent = cart.length;
-        }
+    function updateCartIcon() {
+        document.getElementById('cart-count').textContent = cart.length;
+    }
 
-        function toggleModal() {
-            const modal = document.getElementById('cart-modal');
-            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
-            if (modal.style.display === 'block') updateCartDetails();
-        }
+    function toggleModal() {
+        const modal = document.getElementById('cart-modal');
+        modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        if (modal.style.display === 'block') updateCartDetails();
+    }
 
-        function updateCartDetails() {
-            const details = document.getElementById('cart-details');
-            const totalEl = document.getElementById('total');
-            const checkoutBtn = document.getElementById('checkout-btn');
+    function updateCartDetails() {
+        const details = document.getElementById('cart-details');
+        const totalEl = document.getElementById('total');
+        const checkoutBtn = document.getElementById('checkout-btn');
 
-            details.innerHTML = '';
-            let sum = 0;
-            cart.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = `${item.name} - ${item.price} грн`;
-                details.appendChild(li);
-                sum += item.price;
-            });
-            totalEl.textContent = `Всього: ${sum} грн`;
-            checkoutBtn.style.display = cart.length > 0 ? 'block' : 'none';
-        }
-
-        function showOrderForm() {
-            document.getElementById('order-details').textContent = cart.map(item => `${item.name} (${item.price} грн)`).join(', ');
-            document.getElementById('cart-details').style.display = 'none';
-            document.getElementById('total').style.display = 'none';
-            document.getElementById('checkout-btn').style.display = 'none';
-            document.getElementById('order-form').style.display = 'block';
-        }
-
-        document.getElementById('checkout-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-            const address = document.getElementById('address').value;
-            const details = document.getElementById('order-details').textContent;
-            const total = document.getElementById('total').textContent.replace('Всього: ', '');
-
-            const subject = 'Нове замовлення з магазину';
-            const body = `Ім'я: ${name}\nEmail: ${email}\nТелефон: ${phone}\nАдреса: ${address}\nДеталі: ${details}\nВсього: ${total}`;
-
-            const mailtoLink = `mailto:teslasobaka2000@proton.me?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            window.location.href = mailtoLink;
-
-            // Показати подяку
-            document.getElementById('order-form').style.display = 'none';
-            document.getElementById('thank-you').style.display = 'block';
-
-            // Очистити кошик
-            cart = [];
-            updateCartIcon();
+        details.innerHTML = '';
+        let sum = 0;
+        cart.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = `${item.name} - ${item.price} грн`;
+            details.appendChild(li);
+            sum += item.price;
         });
+        totalEl.textContent = `Всього: ${sum} грн`;
+        checkoutBtn.style.display = cart.length > 0 ? 'block' : 'none';
+    }
 
-        // Закриття модалі по кліку поза нею
-        window.onclick = function(event) {
-            const modal = document.getElementById('cart-modal');
-            if (event.target === modal) toggleModal();
+    function showOrderForm() {
+        document.getElementById('order-details').textContent = cart.map(item => `${item.name} (${item.price} грн)`).join(', ');
+        document.getElementById('cart-details').style.display = 'none';
+        document.getElementById('total').style.display = 'none';
+        document.getElementById('checkout-btn').style.display = 'none';
+        document.getElementById('order-form').style.display = 'block';
+    }
+
+    // Обробка submit для Netlify (асинхронна відправка)
+    document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+        e.preventDefault(); // Запобігаємо стандартній відправці
+
+        // Заповнюємо hidden-поля для деталей і суми
+        document.getElementById('details-input').value = document.getElementById('order-details').textContent;
+        document.getElementById('total-input').value = document.getElementById('total').textContent.replace('Всього: ', '');
+
+        // Створюємо FormData з усієї форми
+        const form = document.getElementById('checkout-form');
+        const formData = new FormData(form);
+
+        try {
+            // Відправляємо на Netlify (endpoint автоматичний: '/')
+            const response = await fetch('/', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                console.log('Дані збережено в Netlify!');
+                // Показати подяку
+                document.getElementById('order-form').style.display = 'none';
+                document.getElementById('thank-you').style.display = 'block';
+            } else {
+                throw new Error('Помилка відправки');
+            }
+        } catch (error) {
+            console.error('Помилка:', error);
+            alert('Помилка відправки. Спробуйте ще раз або зв’яжіться напряму.');
+            // Опціонально: fallback на mailto, якщо хочеш
+            // const mailtoLink = `mailto:teslasobaka2000@proton.me?...`; window.location.href = mailtoLink;
         }
-    </script>
+
+        // Очистити кошик (завжди)
+        cart = [];
+        updateCartIcon();
+    });
+
+    // Закриття модалі по кліку поза нею
+    window.onclick = function(event) {
+        const modal = document.getElementById('cart-modal');
+        if (event.target === modal) toggleModal();
+    }
+</script>
 </body>
 </html>
