@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Магазин подарунків</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; color: #333; }
+        header { text-align: center; margin-bottom: 40px; }
+        .products { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; max-width: 1200px; margin: 0 auto; }
+        .product { background: white; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 250px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; }
+        .product:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+        .product img { width: 100%; height: 200px; object-fit: cover; }
+        .product-content { padding: 20px; text-align: center; }
+        .product h3 { margin: 0 0 10px; font-size: 18px; }
+        .product p { margin: 0 0 15px; font-weight: bold; color: #28a745; }
+        .product button { background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; transition: background 0.3s; }
+        .product button:hover { background: #0056b3; }
+
+        /* Фіксований кошик */
+        #cart-icon { position: fixed; bottom: 20px; right: 20px; background: #28a745; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1000; font-size: 24px; }
+        #cart-count { position: absolute; top: -5px; right: -5px; background: #dc3545; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+
+        /* Модальне вікно */
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+        #cart-details { list-style: none; padding: 0; }
+        #cart-details li { margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #eee; }
+        #total { font-weight: bold; font-size: 18px; text-align: center; margin: 20px 0; }
+        #checkout-btn { background: #28a745; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        #checkout-btn:hover { background: #218838; }
+
+        /* Форма */
+        #order-form { display: none; }
+        #order-form input, #order-form textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        #order-form button[type="submit"] { background: #007bff; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        #order-form button[type="submit"]:hover { background: #0056b3; }
+
+        /* Подяка */
+        #thank-you { display: none; text-align: center; padding: 20px; background: #d4edda; border-radius: 10px; color: #155724; }
+
+        @media (max-width: 768px) { .products { gap: 20px; } .product { width: 100%; max-width: 300px; } }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Магазин унікальних подарунків</h1>
+        <p>Оберіть товар і оформіть замовлення легко!</p>
+    </header>
+
+    <section class="products">
+        <div class="product">
+            <img src="https://via.placeholder.com/250x200?text=Чашка+Наруто+та+Саске" alt="Чашка деколь Наруто та Саске">
+            <div class="product-content">
+                <h3>Чашка деколь Наруто та Саске</h3>
+                <p>250 грн</p>
+                <button onclick="addToCart('Чашка деколь Наруто та Саске', 250)">Купити</button>
+            </div>
+        </div>
+        <div class="product">
+            <img src="https://via.placeholder.com/250x200?text=Дерев'яний+постер" alt="Дерев'яний постер">
+            <div class="product-content">
+                <h3>Дерев'яний постер</h3>
+                <p>500 грн</p>
+                <button onclick="addToCart('Дерев'яний постер', 500)">Купити</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Фіксований кошик -->
+    <div id="cart-icon" onclick="toggleModal()">
+        🛒
+        <div id="cart-count">0</div>
+    </div>
+
+    <!-- Модальне вікно кошика -->
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleModal()">&times;</span>
+            <h2>Ваш кошик</h2>
+            <ul id="cart-details"></ul>
+            <p id="total">Всього: 0 грн</p>
+            <button id="checkout-btn" onclick="showOrderForm()" style="display: none;">Оформити замовлення</button>
+
+            <!-- Форма замовлення -->
+            <div id="order-form">
+                <h3>Деталі замовлення</h3>
+                <p>Товари: <span id="order-details"></span></p>
+                <form id="checkout-form">
+                    <input type="text" id="name" placeholder="Ваше ім'я" required>
+                    <input type="email" id="email" placeholder="Ваш email" required>
+                    <input type="tel" id="phone" placeholder="Ваш телефон" required>
+                    <textarea id="address" placeholder="Адреса доставки" rows="3" required></textarea>
+                    <button type="submit">Відправити</button>
+                </form>
+            </div>
+
+            <!-- Подяка -->
+            <div id="thank-you">
+                <h3>Дякую за Замовлення!</h3>
+                <p>Ми зв'яжемося з вами найближчим часом.</p>
+                <button onclick="toggleModal()" style="background: #6c757d; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">Закрити</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            updateCartIcon();
+            alert('Товар додано до кошика!'); // Простий фідбек, як у прикладі
+        }
+
+        function updateCartIcon() {
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        function toggleModal() {
+            const modal = document.getElementById('cart-modal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+            if (modal.style.display === 'block') updateCartDetails();
+        }
+
+        function updateCartDetails() {
+            const details = document.getElementById('cart-details');
+            const totalEl = document.getElementById('total');
+            const checkoutBtn = document.getElementById('checkout-btn');
+
+            details.innerHTML = '';
+            let sum = 0;
+            cart.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.name} - ${item.price} грн`;
+                details.appendChild(li);
+                sum += item.price;
+            });
+            totalEl.textContent = `Всього: ${sum} грн`;
+            checkoutBtn.style.display = cart.length > 0 ? 'block' : 'none';
+        }
+
+        function showOrderForm() {
+            document.getElementById('order-details').textContent = cart.map(item => `${item.name} (${item.price} грн)`).join(', ');
+            document.getElementById('cart-details').style.display = 'none';
+            document.getElementById('total').style.display = 'none';
+            document.getElementById('checkout-btn').style.display = 'none';
+            document.getElementById('order-form').style.display = 'block';
+        }
+
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const details = document.getElementById('order-details').textContent;
+            const total = document.getElementById('total').textContent.replace('Всього: ', '');
+
+            const subject = 'Нове замовлення з магазину';
+            const body = `Ім'я: ${name}\nEmail: ${email}\nТелефон: ${phone}\nАдреса: ${address}\nДеталі: ${details}\nВсього: ${total}`;
+
+            const mailtoLink = `mailto:teslasobaka2000@proton.me?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoLink;
+
+            // Показати подяку
+            document.getElementById('order-form').style.display = 'none';
+            document.getElementById('thank-you').style.display = 'block';
+
+            // Очистити кошик
+            cart = [];
+            updateCartIcon();
+        });
+
+        // Закриття модалі по кліку поза нею
+        window.onclick = function(event) {
+            const modal = document.getElementById('cart-modal');
+            if (event.target === modal) toggleModal();
+        }
+    </script>
+</body>
+</html>
