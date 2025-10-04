@@ -86,19 +86,20 @@
 
             <!-- Форма замовлення -->
             <div id="order-form">
-                <h3>Деталі замовлення</h3>
-                <p>Товари: <span id="order-details"></span></p>
-                <form id="checkout-form" name="purchase-form" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
-    <input type="hidden" name="form-name" value="purchase-form">
-    <input type="text" name="name" id="name" placeholder="Ваше ім'я" required>
-    <input type="email" name="email" id="email" placeholder="Ваш email" required>
-    <input type="tel" name="phone" id="phone" placeholder="Ваш телефон" required>
-    <textarea name="address" id="address" placeholder="Адреса доставки" rows="3" required></textarea>
-    <input type="hidden" name="details" id="order-details-hidden"> <!-- Заповнюється JS -->
-    <input type="hidden" name="total" id="total-hidden">
-    <button type="submit">Відправити</button>
-    <p class="honeypot" style="display:none;">bot-field</p> <!-- Антиспам -->
-</form>
+    <h3>Деталі замовлення</h3>
+    <p>Товари: <span id="order-details"></span></p>
+    <form id="checkout-form" name="purchase-form" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="purchase-form">
+        <input type="hidden" name="details" id="details-input"> <!-- ЦЕ ОБОВ'ЯЗКОВО! Для товарів -->
+        <input type="hidden" name="total" id="total-input"> <!-- ЦЕ ОБОВ'ЯЗКОВО! Для суми -->
+        <input type="text" name="name" id="name" placeholder="Ваше ім'я" required>
+        <input type="email" name="email" id="email" placeholder="Ваш email" required>
+        <input type="tel" name="phone" id="phone" placeholder="Ваш телефон" required>
+        <textarea name="address" id="address" placeholder="Адреса доставки" rows="3" required></textarea>
+        <button type="submit">Відправити</button>
+        <p class="honeypot" style="display:none;">bot-field</p> <!-- Антибот, ховаємо -->
+    </form>
+</div>
             </div>
 
             <!-- Подяка -->
